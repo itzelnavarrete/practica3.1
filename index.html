@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferretería Lico - Práctica 3.1</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #003366; border-bottom: 2px solid #003366; padding-bottom: 10px; text-align: center; }
+        .section { margin-bottom: 25px; padding: 15px; border: 1px solid #eee; border-radius: 5px; }
+        .info { background-color: #e7f3ff; border-left: 5px solid #003366; }
+        form { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 200px; }
+        button { padding: 10px 20px; background: #003366; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #002244; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f8f9fa; color: #003366; }
+        .status { font-size: 0.9em; color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Práctica 3.1: Alojamiento Gratuito de BD y Apps Web</h1>
+    
+    <div class="section info">
+        <p><strong>Proyecto:</strong> Ferretería Lico</p>
+        <p><strong>Integrante:</strong> Laura Itzel Navarrete Hernández</p>
+        <p><strong>Grupo:</strong> 2CV5</p>
+        <p><strong>Institución:</strong> ESCOM - IPN</p>
+    </div>
+
+    <div class="section">
+        <h3>Gestión de Inventario (App Dinámica)</h3>
+        <p>Registro de productos en MongoDB Atlas mediante API en Render.</p>
+        <form id="prodForm">
+            <input type="text" id="nombre" placeholder="Nombre del producto" required>
+            <input type="number" id="precio" placeholder="Precio" required>
+            <button type="submit">Agregar Producto</button>
+        </form>
+
+        <p class="status" id="statusMsg">Cargando datos desde la nube...</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody id="tablaBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h3>Análisis: GitHub Pages vs Render</h3>
+        <ul>
+            <li><strong>GitHub Pages:</strong> Solo permite contenido estático y no soporta lógica de servidor.</li>
+            <li><strong>Render:</strong> Permite ejecutar el backend (Node.js) y conectar la base de datos distribuida.</li>
+        </ul>
+        <p><strong>URL Aplicación:</strong> <a href="https://practica3-1-tpsb.onrender.com" target="_blank">https://practica3-1-tpsb.onrender.com</a></p>
+    </div>
+</div>
+
+<script>
+    // URL de Render actualizada manualmente
+    const API_URL = "https://practica3-1-tpsb.onrender.com/productos";
+
+    async function cargarDatos() {
+        const msg = document.getElementById('statusMsg');
+        try {
+            const respuesta = await fetch(API_URL);
+            const productos = await respuesta.json();
+            const tabla = document.getElementById('tablaBody');
+            tabla.innerHTML = productos.map(p => `
+                <tr>
+                    <td>${p.nombre}</td>
+                    <td>$${p.precio}</td>
+                </tr>
+            `).join('');
+            msg.innerText = "Sincronizado con MongoDB Atlas.";
+        } catch (error) {
+            console.error("Error:", error);
+            msg.innerText = "Error al conectar con el servidor de Render.";
+        }
+    }
+
+    document.getElementById('prodForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById('nombre').value;
+        const precio = document.getElementById('precio').value;
+
+        await fetch(API_URL, {
+            method: 'POST',
